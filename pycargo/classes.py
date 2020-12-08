@@ -35,12 +35,24 @@ class Row:
 
     def __repr__(self):
         return f"<Row>"
+    
+    def __getitem__(self, value):
+        return self.cells[value]
 
     @property
-    def errors(self):
+    def errors(self) -> dict:
         return {cell.title:cell.errors for cell in self.cells if cell.errors}
 
 
 class Dataset:
     def __init__(self, rows):
         self.rows = rows
+
+    def __str__(self):
+        return f"<Dataset({len(self.rows)})>"
+    
+    def __repr__(self):
+        return f"<Dataset({len(self.rows)})>"
+    
+    def __getitem__(self, value):
+        return self.rows[value]
