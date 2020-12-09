@@ -24,6 +24,11 @@ class Cell:
     def validate(self):
         if self.type.required and self.value is None:
             self.errors.append("Required field")
+        
+        for validator in self.type.validators:
+            result = validator(self.value)
+            if result:
+                self.errors.append(result)
 
 
 class Row:
