@@ -1,4 +1,7 @@
-from typing import Optional
+from typing import Optional, Union, List, Callable
+
+
+FuncOrFuncList = Optional[Union[List, Callable]]
 
 
 class Field:
@@ -7,24 +10,23 @@ class Field:
     attributes and methods for validation
     """
 
-    def __init__(self, required: bool = False):
+    def __init__(
+        self, required: bool = False, validate: FuncOrFuncList = None
+    ):
         self.required = required
+        self.validators = [self.validate_type]
+
+        if validate:
+            if callable(validate):
+                self.validators.append(validate)
+            elif isinstance(validate, list):
+                self.validators + validate
 
     def __str__(self):
         return f"<Field>"
 
     def __repr__(self):
         return f"<Field>"
-
-    @property
-    def validators(self):
-        methods = []
-        for m in dir(self):
-            if m.startswith("validate_"):
-                validator = getattr(self, m)
-                if callable(validator):
-                    methods.append(validator)
-        return methods
 
     def validate_type(self):
         raise NotImplementedError
