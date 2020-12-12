@@ -6,22 +6,21 @@ from . import fields
 from .classes import Cell, Row, Dataset
 
 
-class SpreadSheet:
-    def __init__(self):
-        self._register_fields()
-
-    def _register_fields(self):
-        members = inspect.getmembers(self)
-        self.fields = {
-            name: value
-            for name, value in members
-            if isinstance(value, fields.Field)
+class SpreadSheetMeta(type):
+    def __new__(cls, name, bases, dict_):
+        class_ = type.__new__(cls, name, bases, dict_)
+        class_.fields = {
+            field_name: field_value
+            for field_name, field_value in dict_.items()
+            if isinstance(field_value, fields.Field)
         }
+        return class_
 
+
+class SpreadSheet(metaclass=SpreadSheetMeta):
     @property
     def headers(self):
         headers = [name for name, field in self.fields.items()]
-        headers.reverse()
         return headers
 
     def export_template(self, path):
