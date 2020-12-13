@@ -23,7 +23,7 @@ class SpreadSheet(metaclass=SpreadSheetMeta):
         headers = [name for name, field in self.fields.items()]
         return headers
 
-    def export_template(self, path):
+    def export_template(self, path: str):
         headers = self.headers
         workbook = Workbook()
         sheet = workbook.active
@@ -33,7 +33,7 @@ class SpreadSheet(metaclass=SpreadSheetMeta):
             cell.style = "Accent1"
         workbook.save(path)
 
-    def load(self, path):
+    def load(self, path: str) -> Dataset:
         workbook = load_workbook(path)
         sheet = workbook.active
         rows = sheet.iter_rows(values_only=True)
