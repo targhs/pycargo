@@ -17,9 +17,10 @@ class Field:
     _creation_index = 0  # For sorting
 
     def __init__(
-        self, required: bool = False, validate: FuncOrFuncList = None
+        self, required: bool = False, validate: FuncOrFuncList = None, comment=None
     ):
         self.required = required
+        self.comment = comment
         self._register_validators(validate)
         self._creation_index = Field._creation_index
         Field._creation_index += 1
@@ -101,7 +102,7 @@ class BooleanField(Field):
         if isinstance(value, str):
             value = value.lower()
         if value not in ("true", "1", 1, "false", "0", 0):
-            return "{value} is not a valid boolean value"
+            return f"{value} is not a valid boolean value"
 
 
 class DomainField(StringField):

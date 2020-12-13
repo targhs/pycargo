@@ -1,19 +1,23 @@
 from openpyxl import Workbook, load_workbook
+from openpyxl.comments import Comment
 
 import inspect
 
-from . import fields
+from .fields import Field
 from .classes import Cell, Row, Dataset
 
 
 class SpreadSheetMeta(type):
     def __new__(cls, name, bases, dict_):
-        class_ = type.__new__(cls, name, bases, dict_)
-        class_.fields = {
+        fields = {
             field_name: field_value
             for field_name, field_value in dict_.items()
-            if isinstance(field_value, fields.Field)
+            if isinstance(field_value, Field)
         }
+        for f in fields:
+            del dict_[f]
+        class_ = type.__new__(cls, name, bases, dict_)
+        class_.fields = fields
         return class_
 
 
@@ -24,13 +28,16 @@ class SpreadSheet(metaclass=SpreadSheetMeta):
         return headers
 
     def export_template(self, path: str):
-        headers = self.headers
+        fields = self.fields
         workbook = Workbook()
         sheet = workbook.active
 
-        for col in range(1, len(headers) + 1):
-            cell = sheet.cell(column=col, row=1, value=f"{headers[col-1]}")
+        for idx, header in enumerate(fields, start=1):
+            cell = sheet.cell(column=idx, row=1, value=header)
             cell.style = "Accent1"
+            comment_text = fields[header].comment
+            if comment_text:
+                cell.comment = Comment(comment_text, author="")
         workbook.save(path)
 
     def load(self, path: str) -> Dataset:
