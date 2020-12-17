@@ -3,6 +3,7 @@ from openpyxl.comments import Comment
 
 import inspect
 
+from .styles import apply_style, header_style, required_header_style
 from .fields import Field
 from .classes import Cell, Row, Dataset
 
@@ -34,8 +35,13 @@ class SpreadSheet(metaclass=SpreadSheetMeta):
 
         for idx, header in enumerate(fields, start=1):
             cell = sheet.cell(column=idx, row=1, value=header)
-            cell.style = "Accent1"
+            style = header_style
             comment_text = fields[header].comment
+            
+            if fields[header].required:
+                style = required_header_style
+            apply_style(cell, style)
+            
             if comment_text:
                 cell.comment = Comment(comment_text, author="")
         workbook.save(path)
