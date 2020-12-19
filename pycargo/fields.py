@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional, Union, List, Callable, Any
 
 import validators
@@ -17,7 +18,10 @@ class Field:
     _creation_index = 0  # For sorting
 
     def __init__(
-        self, required: bool = False, validate: FuncOrFuncList = None, comment=None
+        self,
+        required: bool = False,
+        validate: FuncOrFuncList = None,
+        comment=None,
     ):
         self.required = required
         self.comment = comment
@@ -63,8 +67,9 @@ class DateTimeField(Field):
     def __repr__(self):
         return "<DateTimeField>"
 
-    def validate_type(self, value):
-        return None
+    def validate_type(self, value: Any):
+        if not isinstance(value, datetime):
+            return f"{value} not a valid datetime"
 
 
 class StringField(Field):

@@ -17,14 +17,14 @@ class Cell:
 
     def __str__(self):
         return f"<Cell {self.title}:{self.value}>"
-    
+
     def __repr__(self):
         return f"<Cell {self.title}:{self.value}>"
 
     def validate(self):
         if self.type.required and self.value is None:
             self.errors.append("Required field")
-        
+
         for validator in self.type.validators:
             result = validator(self.value)
             if result:
@@ -40,13 +40,13 @@ class Row:
 
     def __repr__(self):
         return f"<Row>"
-    
+
     def __getitem__(self, value):
         return self.cells[value]
 
     @property
     def errors(self) -> dict:
-        return {cell.title:cell.errors for cell in self.cells if cell.errors}
+        return {cell.title: cell.errors for cell in self.cells if cell.errors}
 
 
 class Dataset:
@@ -55,9 +55,15 @@ class Dataset:
 
     def __str__(self):
         return f"<Dataset({len(self.rows)})>"
-    
+
     def __repr__(self):
         return f"<Dataset({len(self.rows)})>"
-    
+
     def __getitem__(self, value):
         return self.rows[value]
+
+    @property
+    def errors(self) -> dict:
+        return {
+            idx: row.errors for idx, row in enumerate(self.rows) if row.errors
+        }
