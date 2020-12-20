@@ -7,19 +7,18 @@ OptionalField = Optional[Type[Field]]
 
 class Cell:
     def __init__(
-        self, title: str, value: Any, field_type: OptionalField = None
+        self, value: Any, field_type: OptionalField = None
     ):
-        self.title = title
         self.value = value
         self.type = field_type
         self.errors = []
         self.validate()
 
     def __str__(self):
-        return f"<Cell {self.title}:{self.value}>"
+        return f"<Cell {self.value}>"
 
     def __repr__(self):
-        return f"<Cell {self.title}:{self.value}>"
+        return f"<Cell {self.value}>"
 
     def validate(self):
         if self.type.required and self.value is None:
@@ -32,8 +31,10 @@ class Cell:
 
 
 class Row:
-    def __init__(self, cells):
-        self.cells = cells
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            assert isinstance(v, Cell)
+            setattr(self, k, v)
 
     def __str__(self):
         return f"<Row>"
@@ -41,8 +42,6 @@ class Row:
     def __repr__(self):
         return f"<Row>"
 
-    def __getitem__(self, value):
-        return self.cells[value]
 
     @property
     def errors(self) -> dict:

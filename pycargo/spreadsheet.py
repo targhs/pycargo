@@ -56,14 +56,16 @@ class SpreadSheet(metaclass=SpreadSheetMeta):
         rows = sheet.iter_rows(values_only=True)
         file_headers = next(rows)
         self._validate_headers(file_headers)
+        return self._load_rows(rows, file_headers)
 
+    def _load_rows(self, rows, headers):
         data_rows = []
         for row in rows:
-            cells = []
+            cells = {}
             for idx, value in enumerate(row):
-                header = file_headers[idx]
-                cells.append(Cell(header, value, self.fields[header]))
-            data_rows.append(Row(cells))
+                header = headers[idx]
+                cells[header] = Cell(value, self.fields[header])
+            data_rows.append(Row(**cells))
         return Dataset(data_rows)
 
     def _validate_headers(self, headers: IterableStr):
