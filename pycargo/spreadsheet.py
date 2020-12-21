@@ -55,10 +55,10 @@ class SpreadSheet(metaclass=SpreadSheetMeta):
         sheet = workbook.active
         rows = sheet.iter_rows(values_only=True)
         file_headers = next(rows)
-        self._validate_headers(file_headers)
         return self._load_rows(rows, file_headers)
 
     def _load_rows(self, rows, headers):
+        self._validate_headers(headers)
         data_rows = []
         for row in rows:
             cells = {}

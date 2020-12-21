@@ -6,9 +6,7 @@ OptionalField = Optional[Type[Field]]
 
 
 class Cell:
-    def __init__(
-        self, value: Any, field_type: OptionalField = None
-    ):
+    def __init__(self, value: Any, field_type: OptionalField = None):
         self.value = value
         self.type = field_type
         self.errors = []
@@ -41,7 +39,6 @@ class Row:
 
     def __repr__(self):
         return f"<Row>"
-
 
     @property
     def errors(self) -> dict:
