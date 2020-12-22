@@ -1,3 +1,5 @@
+import inspect
+
 from typing import Type, Optional, Any
 
 from .fields import Field
@@ -40,9 +42,14 @@ class Row:
     def __repr__(self):
         return f"<Row>"
 
+    def get_cells(self):
+        members = inspect.getmembers(self)
+        return members
+        
     @property
     def errors(self) -> dict:
-        return {cell.title: cell.errors for cell in self.cells if cell.errors}
+        cells = self.__dict__
+        return {name: cell.errors for name, cell in cells.items() if cell.errors}
 
 
 class Dataset:
