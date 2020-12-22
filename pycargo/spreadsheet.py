@@ -2,8 +2,6 @@ from typing import List
 from openpyxl import Workbook, load_workbook
 from openpyxl.comments import Comment
 
-import inspect
-
 from pycargo import exceptions
 from pycargo.types import IterableStrOrNone, IterableStr
 from pycargo.styles import apply_style, header_style, required_header_style
@@ -18,10 +16,12 @@ class SpreadSheetMeta(type):
             for field_name, field_value in dict_.items()
             if isinstance(field_value, Field)
         }
-        for f in fields:
-            del dict_[f]
         class_ = type.__new__(cls, name, bases, dict_)
         class_.fields = fields
+        class_.data_key_mapping = {}
+        for key, value in fields.items():
+            del dict_[key]
+            class_.data_key_mapping[value.data_key or key] = key
         return class_
 
 
@@ -31,6 +31,9 @@ class SpreadSheet(metaclass=SpreadSheetMeta):
         headers = [name for name, field in self.fields.items()]
         return headers
 
+    def get_field_name(self, name):
+        return self.data_key_mapping[name]
+
     def export_template(self, path: str, only: IterableStrOrNone = None):
         if only is None:
             only = self.fields
@@ -39,7 +42,10 @@ class SpreadSheet(metaclass=SpreadSheetMeta):
         workbook = Workbook()
         sheet = workbook.active
         for idx, header in enumerate(only, start=1):
-            cell = sheet.cell(column=idx, row=1, value=header)
+            value = fields[header].data_key or header
+            cell = sheet.cell(
+                column=idx, row=1, value=value
+            )
             style = header_style
             comment_text = fields[header].comment
             if fields[header].required:
@@ -55,7 +61,8 @@ class SpreadSheet(metaclass=SpreadSheetMeta):
         sheet = workbook.active
         rows = sheet.iter_rows(values_only=True)
         file_headers = next(rows)
-        return self._load_rows(rows, file_headers)
+        self.data = self._load_rows(rows, file_headers)
+        return self.data
 
     def _load_rows(self, rows, headers):
         self._validate_headers(headers)
@@ -63,14 +70,14 @@ class SpreadSheet(metaclass=SpreadSheetMeta):
         for row in rows:
             cells = {}
             for idx, value in enumerate(row):
-                header = headers[idx]
+                header = self.get_field_name(headers[idx])
                 cells[header] = Cell(value, self.fields[header])
             data_rows.append(Row(**cells))
         return Dataset(data_rows)
 
     def _validate_headers(self, headers: IterableStr):
         for header in headers:
-            if header not in self.fields:
+            if header not in self.data_key_mapping:
                 raise exceptions.InvalidHeaderException(
                     f"Got unexpected field '{header}'"
                 )

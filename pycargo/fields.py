@@ -21,10 +21,12 @@ class Field:
         self,
         required: bool = False,
         validate: FuncOrFuncList = None,
-        comment=None,
+        comment: Optional[str] = None,
+        data_key: Optional[str] = None
     ):
         self.required = required
         self.comment = comment
+        self.data_key = data_key
         self._register_validators(validate)
         self._creation_index = Field._creation_index
         Field._creation_index += 1
