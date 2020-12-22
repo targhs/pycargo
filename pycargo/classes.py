@@ -42,14 +42,12 @@ class Row:
     def __repr__(self):
         return f"<Row>"
 
-    def get_cells(self):
-        members = inspect.getmembers(self)
-        return members
-        
     @property
     def errors(self) -> dict:
         cells = self.__dict__
-        return {name: cell.errors for name, cell in cells.items() if cell.errors}
+        return {
+            name: cell.errors for name, cell in cells.items() if cell.errors
+        }
 
 
 class Dataset:

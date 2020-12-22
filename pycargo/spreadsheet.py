@@ -1,5 +1,5 @@
-from typing import List
-from openpyxl import Workbook, load_workbook
+from typing import Type
+from openpyxl import Workbook, load_workbook, workbook, worksheet
 from openpyxl.comments import Comment
 
 from pycargo import exceptions
@@ -26,6 +26,10 @@ class SpreadSheetMeta(type):
 
 
 class SpreadSheet(metaclass=SpreadSheetMeta):
+    def __init__(self):
+        self.workbook = Workbook()
+        self.sheet = self.workbook.active
+
     @property
     def headers(self):
         headers = [name for name, field in self.fields.items()]
@@ -34,18 +38,18 @@ class SpreadSheet(metaclass=SpreadSheetMeta):
     def get_field_name(self, name):
         return self.data_key_mapping[name]
 
-    def export_template(self, path: str, only: IterableStrOrNone = None):
+    def _write_headers(self, sheet, only: IterableStrOrNone = None):
+        all_fields = self.fields
         if only is None:
-            only = self.fields
+            fields = self.fields
+        else:
+            fields = {
+                field_name: all_fields[field_name] for field_name in only
+            }
 
-        fields = self.fields
-        workbook = Workbook()
-        sheet = workbook.active
-        for idx, header in enumerate(only, start=1):
+        for idx, header in enumerate(fields, start=1):
             value = fields[header].data_key or header
-            cell = sheet.cell(
-                column=idx, row=1, value=value
-            )
+            cell = sheet.cell(column=idx, row=1, value=value)
             style = header_style
             comment_text = fields[header].comment
             if fields[header].required:
@@ -54,7 +58,10 @@ class SpreadSheet(metaclass=SpreadSheetMeta):
 
             if comment_text:
                 cell.comment = Comment(comment_text, author="")
-        workbook.save(path)
+
+    def export_template(self, path: str, only: IterableStrOrNone = None):
+        self._write_headers(self.sheet, only)
+        self.workbook.save(path)
 
     def load(self, path: str) -> Dataset:
         workbook = load_workbook(path)
