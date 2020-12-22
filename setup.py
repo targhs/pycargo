@@ -1,11 +1,11 @@
 import setuptools
 
-with open("README.md", "r", encoding="utf-8") as fh:
+with open("README.rst", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name="pycargo", # Replace with your own username
-    version="0.0.6",
+    version="1.0.0",
     author="Taranjeet Singh",
     author_email="taranjeet.singh.3312@gmail.com",
     description="Pycargo is a utility to work with loading and exporting data from excel",
