@@ -1,4 +1,4 @@
-from typing import Type
+from typing import List, Type
 from openpyxl import Workbook, load_workbook, workbook, worksheet
 from openpyxl.comments import Comment
 
@@ -11,6 +11,12 @@ from pycargo.classes import Cell, Row, Dataset
 
 class SpreadSheetMeta(type):
     def __new__(cls, name, bases, dict_):
+        """Add all the Fields of the spreadsheet
+        into the fields attribute and remove their references
+        Also creates a data_key_mapping attribute that
+        keeps a mapping of data_key of the field and their
+        actual names
+        """
         fields = {
             field_name: field_value
             for field_name, field_value in dict_.items()
@@ -31,11 +37,11 @@ class SpreadSheet(metaclass=SpreadSheetMeta):
         self.sheet = self.workbook.active
 
     @property
-    def headers(self):
+    def headers(self) -> List:
         headers = [name for name, field in self.fields.items()]
         return headers
 
-    def get_field_name(self, name):
+    def get_field_name(self, name: str) -> str:
         return self.data_key_mapping[name]
 
     def _write_headers(self, sheet, only: IterableStrOrNone = None):
@@ -63,7 +69,7 @@ class SpreadSheet(metaclass=SpreadSheetMeta):
         self._write_headers(self.sheet, only)
         self.workbook.save(path)
 
-    def load(self, path: str) -> Dataset:
+    def load(self, path: str) -> Type[Dataset]:
         workbook = load_workbook(path)
         sheet = workbook.active
         rows = sheet.iter_rows(values_only=True)
@@ -71,7 +77,7 @@ class SpreadSheet(metaclass=SpreadSheetMeta):
         self.data = self._load_rows(rows, file_headers)
         return self.data
 
-    def _load_rows(self, rows, headers):
+    def _load_rows(self, rows, headers: IterableStr) -> Type[Dataset]:
         self._validate_headers(headers)
         data_rows = []
         for row in rows:

@@ -2,7 +2,6 @@ from typing import Type
 
 from openpyxl.cell import Cell
 from openpyxl.styles import (
-    Color,
     Fill,
     PatternFill,
     Border,
