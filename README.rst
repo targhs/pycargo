@@ -31,7 +31,7 @@ loading data.
     cs = CustomerSpreadSheet()
 
     # Exporting templates
-    cs.export_template("customer_template.xlsx", only=["Name", "Code"])
+    cs.export_template("customer_template.xlsx", only=["name", "code"])
 
     # Bulk loading
     dataset = cs.load("customer_template.xlsx")
