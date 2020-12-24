@@ -1,3 +1,4 @@
+from copy import error
 import inspect
 
 from typing import Hashable, Type, Optional, Any
@@ -57,11 +58,24 @@ class Row:
         return f"<Row>"
 
     @property
+    def cells(self):
+        return self.__dict__
+
+    @property
     def errors(self) -> dict:
-        cells = self.__dict__
         return {
-            name: cell.errors for name, cell in cells.items() if cell.errors
+            name: cell.errors
+            for name, cell in self.cells.items()
+            if cell.errors
         }
+
+    def as_dict(self):
+        data = {"errors": {}}
+        for field_name, field_value in self.cells.items():
+            data[field_name] = field_value.value
+            if errors := field_value.errors:
+                data["errors"][field_name] = errors
+        return data
 
 
 class Dataset:
@@ -86,3 +100,9 @@ class Dataset:
         return {
             idx: row.errors for idx, row in enumerate(self.rows) if row.errors
         }
+
+    def as_dict(self):
+        data = {}
+        for idx, row in enumerate(self.rows):
+            data[idx] = row.as_dict()
+        return data
