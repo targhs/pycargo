@@ -22,7 +22,7 @@ class Field:
         required: bool = False,
         validate: FuncOrFuncList = None,
         comment: Optional[str] = None,
-        data_key: Optional[str] = None
+        data_key: Optional[str] = None,
     ):
         self.required = required
         self.comment = comment
@@ -48,6 +48,14 @@ class Field:
 
     def validate_type(self):
         raise NotImplementedError
+
+    def validate(self, value):
+        errors = []
+        for validator in self.validators:
+            error = validator(value)
+            if error:
+                errors.append(error)
+        return errors
 
 
 class IntegerField(Field):

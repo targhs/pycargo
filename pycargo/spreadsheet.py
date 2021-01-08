@@ -1,3 +1,4 @@
+import pandas as pd
 from typing import List, Type
 from openpyxl import Workbook, load_workbook, workbook, worksheet
 from openpyxl.comments import Comment
@@ -6,7 +7,7 @@ from pycargo import exceptions
 from pycargo.types import IterableStrOrNone, IterableStr
 from pycargo.styles import apply_style, header_style, required_header_style
 from pycargo.fields import Field
-from pycargo.classes import Cell, Row, Dataset
+from pycargo.classes import Cell, Row, RowIterator
 
 
 class SpreadSheetMeta(type):
@@ -69,24 +70,14 @@ class SpreadSheet(metaclass=SpreadSheetMeta):
         self._write_headers(self.sheet, only)
         self.workbook.save(path)
 
-    def load(self, path: str) -> Type[Dataset]:
-        workbook = load_workbook(path)
-        sheet = workbook.active
-        rows = sheet.iter_rows(values_only=True)
-        file_headers = next(rows)
-        self.data = self._load_rows(rows, file_headers)
-        return self.data
+    def load(self, path: str) -> None:
+        df = pd.read_excel(path)
+        self._validate_headers(df.columns)
+        self.df = df.rename(columns=self.data_key_mapping)
+        # return self._load_rows(df)
 
-    def _load_rows(self, rows, headers: IterableStr) -> Type[Dataset]:
-        self._validate_headers(headers)
-        data_rows = []
-        for row in rows:
-            cells = {}
-            for idx, value in enumerate(row):
-                header = self.get_field_name(headers[idx])
-                cells[header] = Cell(value, self.fields[header])
-            data_rows.append(Row(**cells))
-        return Dataset(data_rows)
+    def rows(self):
+        return RowIterator(self.df, self.fields)
 
     def _validate_headers(self, headers: IterableStr):
         for header in headers:

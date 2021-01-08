@@ -1,5 +1,4 @@
-from copy import error
-import inspect
+import pandas as pd
 
 from typing import Hashable, Type, Optional, Any
 
@@ -16,11 +15,12 @@ class Cell:
     the are added to errors list.
     """
 
-    def __init__(self, value: Any, field_type: OptionalField = None):
+    def __init__(self, value: Any, field_type: OptionalField, validators=None):
         self.value = value
+        self.validators = validators or []
         self.type = field_type
         self.errors = []
-        self.validate()
+        # self.validate()
 
     def __str__(self):
         return f"<Cell {self.value}>"
@@ -34,7 +34,7 @@ class Cell:
             self.errors.append("Required field")
 
         # Check custom field validators
-        for validator in self.type.validators:
+        for validator in self.validators:
             result = validator(self.value)
             if result:
                 self.errors.append(result)
@@ -46,20 +46,14 @@ class Row:
     Consists one or more cells.
     """
 
-    def __init__(self, **kwargs):
-        for k, v in kwargs.items():
-            assert isinstance(v, Cell)
-            setattr(self, k, v)
+    def __init__(self, cells):
+        self.cells = cells
 
     def __str__(self):
         return f"<Row>"
 
     def __repr__(self):
         return f"<Row>"
-
-    @property
-    def cells(self):
-        return self.__dict__
 
     @property
     def errors(self) -> dict:
@@ -78,31 +72,27 @@ class Row:
         return data
 
 
-class Dataset:
-    """
-    Represents a container for the Rows.
-    """
+def get_row_obj(row_data, fields):
+    cells = {}
+    for key, value in row_data.items():
+        cells[key] = Cell(value, fields[key])
+    return Row(cells)
 
-    def __init__(self, rows):
-        self.rows = rows
 
-    def __str__(self):
-        return f"<Dataset({len(self.rows)})>"
+class RowIterator:
+    def __init__(self, df, fields):
+        self.df = df
+        self.fields = fields
+        self.total_rows = len(df)
 
-    def __repr__(self):
-        return f"<Dataset({len(self.rows)})>"
+    def __iter__(self):
+        self.row = 0
+        return self
 
-    def __getitem__(self, value: Hashable) -> Any:
-        return self.rows[value]
-
-    @property
-    def errors(self) -> dict:
-        return {
-            idx: row.errors for idx, row in enumerate(self.rows) if row.errors
-        }
-
-    def as_dict(self):
-        data = {}
-        for idx, row in enumerate(self.rows):
-            data[idx] = row.as_dict()
-        return data
+    def __next__(self):
+        if self.row < self.total_rows:
+            result = dict(self.df.iloc[self.row])
+            self.row += 1
+            return get_row_obj(result, self.fields)
+        else:
+            raise StopIteration
