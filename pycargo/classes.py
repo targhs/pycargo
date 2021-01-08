@@ -1,8 +1,9 @@
-import pandas as pd
-
 from typing import Hashable, Type, Optional, Any
 
-from .fields import Field
+import pandas as pd
+
+from pycargo.exceptions import ValidationException
+from pycargo.fields import Field
 
 
 OptionalField = Optional[Type[Field]]
@@ -15,12 +16,11 @@ class Cell:
     the are added to errors list.
     """
 
-    def __init__(self, value: Any, field_type: OptionalField, validators=None):
+    def __init__(self, value: Any, field_type: OptionalField):
         self.value = value
-        self.validators = validators or []
         self.type = field_type
         self.errors = []
-        # self.validate()
+        self.validate()
 
     def __str__(self):
         return f"<Cell {self.value}>"
@@ -29,15 +29,11 @@ class Cell:
         return f"<Cell {self.value}>"
 
     def validate(self):
-        # Check for required field
-        if self.type.required and self.value is None:
-            self.errors.append("Required field")
-
-        # Check custom field validators
-        for validator in self.validators:
-            result = validator(self.value)
-            if result:
-                self.errors.append(result)
+        for validator in self.type.validators:
+            try:
+                validator(self.value)
+            except ValidationException as exc:
+                self.errors.append(exc.message)
 
 
 class Row:

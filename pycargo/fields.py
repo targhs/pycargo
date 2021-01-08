@@ -1,7 +1,9 @@
 from datetime import datetime
 from typing import Optional, Union, List, Callable, Any
-
 import validators
+
+from pycargo.exceptions import ValidationException
+
 
 # Types
 FuncOrFuncList = Optional[Union[List[Callable], Callable]]
@@ -27,6 +29,7 @@ class Field:
         self.required = required
         self.comment = comment
         self.data_key = data_key
+        self.validators = []
         self._register_validators(validate)
         self._creation_index = Field._creation_index
         Field._creation_index += 1
@@ -38,13 +41,13 @@ class Field:
         return "<Field>"
 
     def _register_validators(self, validate):
-        self.validators = [self.validate_type]
+        self.validators.append(self.validate_type)
 
         if validate:
             if callable(validate):
                 self.validators.append(validate)
             elif isinstance(validate, list):
-                self.validators + validate
+                self.validators.extend(validate)
 
     def validate_type(self):
         raise NotImplementedError
@@ -67,7 +70,7 @@ class IntegerField(Field):
 
     def validate_type(self, value: Any) -> OptionalString:
         if not isinstance(value, int) and value is not None:
-            return "Value must be integer"
+            raise ValidationException("Value must be integer")
 
 
 class DateTimeField(Field):
@@ -79,7 +82,7 @@ class DateTimeField(Field):
 
     def validate_type(self, value: Any):
         if not isinstance(value, datetime):
-            return f"{value} not a valid datetime"
+            raise ValidationException(f"{value} not a valid datetime")
 
 
 class StringField(Field):
@@ -91,7 +94,7 @@ class StringField(Field):
 
     def validate_type(self, value: Any) -> OptionalString:
         if not isinstance(value, str) and value is not None:
-            return "Value must be string"
+            raise ValidationException("Value must be string")
 
 
 class FloatField(Field):
@@ -103,7 +106,7 @@ class FloatField(Field):
 
     def validate_type(self, value: Any) -> OptionalString:
         if not isinstance(value, float) and value is not None:
-            return "Value must be float"
+            raise ValidationException("Value must be float")
 
 
 class BooleanField(Field):
@@ -117,7 +120,7 @@ class BooleanField(Field):
         if isinstance(value, str):
             value = value.lower()
         if value not in ("true", "1", 1, "false", "0", 0):
-            return f"{value} is not a valid boolean value"
+            raise ValidationException(f"{value} is not a valid boolean value")
 
 
 class DomainField(StringField):
@@ -130,7 +133,7 @@ class DomainField(StringField):
     def validate_type(self, value: Any) -> OptionalString:
         valid = validators.domain(value)
         if not valid:
-            return "Invalid domain value"
+            raise ValidationException("Invalid domain value")
 
 
 class EmailField(StringField):
@@ -143,7 +146,7 @@ class EmailField(StringField):
     def validate_type(self, value: Any) -> OptionalString:
         valid = validators.email(value)
         if not valid:
-            return "Invalid email"
+            raise ValidationException("Invalid email")
 
 
 class UrlField(StringField):
@@ -156,4 +159,4 @@ class UrlField(StringField):
     def validate_type(self, value: Any) -> OptionalString:
         valid = validators.url(value)
         if not valid:
-            return "Invalid url"
+            raise ValidationException("Invalid url")
