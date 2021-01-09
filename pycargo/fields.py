@@ -1,6 +1,9 @@
 from datetime import datetime
 from typing import Optional, Union, List, Callable, Any
+
 import validators
+import pandas as pd
+import numpy as np
 
 from pycargo.exceptions import ValidationException
 
@@ -65,25 +68,37 @@ class Field:
 
 class IntegerField(Field):
     def validate_type(self, value: Any) -> OptionalString:
-        if not isinstance(value, int) and value is not None:
+        if not isinstance(value, np.int64):
             raise ValidationException("Value must be integer")
 
 
 class DateTimeField(Field):
     def validate_type(self, value: Any):
-        if not isinstance(value, datetime):
+        if not isinstance(value, pd.Timestamp):
             raise ValidationException(f"{value} not a valid datetime")
+
+
+class DateField(Field):
+    def validate_type(self, value: Any):
+        if not isinstance(value, pd.Timestamp):
+            raise ValidationException(f"{value} not a valid date")
+
+        for v in [value.hour, value.minute, value.second]:
+            if v != 0:
+                raise ValidationException(
+                    f"{value} is a datetiem and not date."
+                )
 
 
 class StringField(Field):
     def validate_type(self, value: Any) -> OptionalString:
-        if not isinstance(value, str) and value is not None:
+        if not isinstance(value, str):
             raise ValidationException("Value must be string")
 
 
 class FloatField(Field):
     def validate_type(self, value: Any) -> OptionalString:
-        if not isinstance(value, float) and value is not None:
+        if not isinstance(value, float):
             raise ValidationException("Value must be float")
 
 
