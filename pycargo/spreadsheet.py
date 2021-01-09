@@ -4,6 +4,7 @@ from openpyxl import Workbook, load_workbook, workbook, worksheet
 from openpyxl.comments import Comment
 
 from pycargo import exceptions
+from pycargo import utils
 from pycargo.types import IterableStrOrNone, IterableStr
 from pycargo.styles import apply_style, header_style, required_header_style
 from pycargo.fields import Field
@@ -36,6 +37,10 @@ class SpreadSheet(metaclass=SpreadSheetMeta):
     def __init__(self):
         self.workbook = Workbook()
         self.sheet = self.workbook.active
+
+    def __repr__(self):
+        classname = self.__class__.__name__
+        return (f"<{classname} fields({utils.format_dict(self.fields)})>")
 
     @property
     def headers(self) -> List:

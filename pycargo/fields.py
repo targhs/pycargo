@@ -34,11 +34,13 @@ class Field:
         self._creation_index = Field._creation_index
         Field._creation_index += 1
 
-    def __str__(self):
-        return "<Field>"
-
     def __repr__(self):
-        return "<Field>"
+        comment = f"'{self.comment}'" if self.comment else None
+        return (
+            f"<fields.{self.__class__.__name__}"
+            f"(data_key='{self.data_key}', "
+            f"comment={comment})>"
+        )
 
     def _register_validators(self, validate):
         self.validators.append(self.validate_type)
@@ -62,60 +64,30 @@ class Field:
 
 
 class IntegerField(Field):
-    def __str__(self):
-        return "<IntegerField>"
-
-    def __repr__(self):
-        return "<IntegerField>"
-
     def validate_type(self, value: Any) -> OptionalString:
         if not isinstance(value, int) and value is not None:
             raise ValidationException("Value must be integer")
 
 
 class DateTimeField(Field):
-    def __str__(self):
-        return "<DateTimeField>"
-
-    def __repr__(self):
-        return "<DateTimeField>"
-
     def validate_type(self, value: Any):
         if not isinstance(value, datetime):
             raise ValidationException(f"{value} not a valid datetime")
 
 
 class StringField(Field):
-    def __str__(self):
-        return "<StringField>"
-
-    def __repr__(self):
-        return "<StringField>"
-
     def validate_type(self, value: Any) -> OptionalString:
         if not isinstance(value, str) and value is not None:
             raise ValidationException("Value must be string")
 
 
 class FloatField(Field):
-    def __str__(self):
-        return "<FloatField>"
-
-    def __repr__(self):
-        return "<FloatField>"
-
     def validate_type(self, value: Any) -> OptionalString:
         if not isinstance(value, float) and value is not None:
             raise ValidationException("Value must be float")
 
 
 class BooleanField(Field):
-    def __str__(self):
-        return "<BooleanField>"
-
-    def __repr__(self):
-        return "<BooleanField>"
-
     def validate_type(self, value: Any) -> OptionalString:
         if isinstance(value, str):
             value = value.lower()
@@ -124,12 +96,6 @@ class BooleanField(Field):
 
 
 class DomainField(StringField):
-    def __str__(self):
-        return "<DomainField>"
-
-    def __repr__(self):
-        return "<DomainField>"
-
     def validate_type(self, value: Any) -> OptionalString:
         valid = validators.domain(value)
         if not valid:
@@ -137,12 +103,6 @@ class DomainField(StringField):
 
 
 class EmailField(StringField):
-    def __str__(self):
-        return "<EmailField>"
-
-    def __repr__(self):
-        return "<EmailField>"
-
     def validate_type(self, value: Any) -> OptionalString:
         valid = validators.email(value)
         if not valid:
@@ -150,12 +110,6 @@ class EmailField(StringField):
 
 
 class UrlField(StringField):
-    def __str__(self):
-        return "<UrlField>"
-
-    def __repr__(self):
-        return "<UrlField>"
-
     def validate_type(self, value: Any) -> OptionalString:
         valid = validators.url(value)
         if not valid:

@@ -2,6 +2,7 @@ from typing import Hashable, Type, Optional, Any
 
 import pandas as pd
 
+from pycargo import utils
 from pycargo.exceptions import ValidationException
 from pycargo.fields import Field
 
@@ -21,9 +22,6 @@ class Cell:
         self.type = field_type
         self.errors = []
         self.validate()
-
-    def __str__(self):
-        return f"<Cell {self.value}>"
 
     def __repr__(self):
         return f"<Cell {self.value}>"
@@ -45,11 +43,8 @@ class Row:
     def __init__(self, cells):
         self.cells = cells
 
-    def __str__(self):
-        return f"<Row>"
-
     def __repr__(self):
-        return f"<Row>"
+        return f"<Row cells({self.cells})>"
 
     @property
     def errors(self) -> dict:
@@ -80,6 +75,9 @@ class RowIterator:
         self.df = df
         self.fields = fields
         self.total_rows = len(df)
+
+    def __repr__(self):
+        return f"<RowIterator({self.total_rows})>"
 
     def __iter__(self):
         self.row = 0
