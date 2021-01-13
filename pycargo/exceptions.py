@@ -1,6 +1,3 @@
-import typing
-
-
 class PyCargoException(Exception):
     pass
 

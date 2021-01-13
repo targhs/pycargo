@@ -1,8 +1,7 @@
-from typing import Hashable, Type, Optional, Any, Dict
+from typing import Type, Optional, Any, Dict
 
 import pandas as pd
 
-from pycargo import utils
 from pycargo.exceptions import ValidationException
 from pycargo.fields import Field
 
