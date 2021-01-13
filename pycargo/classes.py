@@ -1,4 +1,4 @@
-from typing import Hashable, Type, Optional, Any
+from typing import Hashable, Type, Optional, Any, Dict
 
 import pandas as pd
 
@@ -8,6 +8,7 @@ from pycargo.fields import Field
 
 
 OptionalField = Optional[Type[Field]]
+FieldsDict = Dict[str, Type[Field]]
 
 
 class Cell:
@@ -24,7 +25,8 @@ class Cell:
         self.validate()
 
     def __repr__(self):
-        return f"<Cell {self.value}>"
+        value = None if pd.isna(self.value) else self.value
+        return f"<Cell {value}>"
 
     def validate(self):
         for validator in self.type.validators:
@@ -63,7 +65,7 @@ class Row:
         return data
 
 
-def get_row_obj(row_data, fields):
+def get_row_obj(row_data: dict, fields: FieldsDict) -> Type[Row]:
     cells = {}
     for key, value in row_data.items():
         cells[key] = Cell(value, fields[key])
