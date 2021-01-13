@@ -24,12 +24,10 @@ class Field:
 
     def __init__(
         self,
-        required: bool = False,
         validate: FuncOrFuncList = None,
         comment: Optional[str] = None,
         data_key: Optional[str] = None,
     ):
-        self.required = required
         self.comment = comment
         self.data_key = data_key
         self.validators = []

@@ -9,6 +9,7 @@ from pycargo.types import IterableStrOrNone, IterableStr
 from pycargo.styles import apply_style, header_style, required_header_style
 from pycargo.fields import Field
 from pycargo.classes import Cell, Row, RowIterator
+from pycargo import validate
 
 
 class SpreadSheetMeta(type):
@@ -40,7 +41,7 @@ class SpreadSheet(metaclass=SpreadSheetMeta):
 
     def __repr__(self):
         classname = self.__class__.__name__
-        return (f"<{classname} fields({utils.format_dict(self.fields)})>")
+        return f"<{classname} fields({utils.format_dict(self.fields)})>"
 
     @property
     def headers(self) -> List:
@@ -64,12 +65,20 @@ class SpreadSheet(metaclass=SpreadSheetMeta):
             cell = sheet.cell(column=idx, row=1, value=value)
             style = header_style
             comment_text = fields[header].comment
-            if fields[header].required:
+
+            if self._is_field_required(header):
                 style = required_header_style
             apply_style(cell, style)
 
             if comment_text:
                 cell.comment = Comment(comment_text, author="")
+
+    def _is_field_required(self, name: str) -> bool:
+        field = self.fields[name]
+        for validator in field.validators:
+            if isinstance(validator, validate.Required):
+                return True
+        return False
 
     def export_template(self, path: str, only: IterableStrOrNone = None):
         self._write_headers(self.sheet, only)
@@ -79,7 +88,6 @@ class SpreadSheet(metaclass=SpreadSheetMeta):
         df = pd.read_excel(path)
         self._validate_headers(df.columns)
         self.df = df.rename(columns=self.data_key_mapping)
-        # return self._load_rows(df)
 
     def rows(self):
         return RowIterator(self.df, self.fields)
