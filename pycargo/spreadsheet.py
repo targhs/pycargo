@@ -44,14 +44,6 @@ class SpreadSheet(metaclass=SpreadSheetMeta):
         classname = self.__class__.__name__
         return f"<{classname} fields({utils.format_dict(self.fields)})>"
 
-    @property
-    def headers(self) -> typing.List:
-        headers = [name for name, field in self.fields.items()]
-        return headers
-
-    def get_field_name(self, name: str) -> str:
-        return self.data_key_mapping[name]
-
     def _write_headers(self, sheet, only: IterableStrOrNone = None):
         all_fields = self.fields
         if only is None:
@@ -81,21 +73,51 @@ class SpreadSheet(metaclass=SpreadSheetMeta):
                 return True
         return False
 
+    def _required_fields(self) -> typing.List[str]:
+        return [
+            field_name
+            for field_name in self.fields
+            if self._is_field_required(field_name)
+        ]
+
+    def _validate_headers(self, headers: IterableStr):
+        self._check_unexpected_fields(headers)
+        self._check_required_fields(headers)
+
+    def _check_unexpected_fields(self, headers: IterableStr):
+        for header in headers:
+            if header not in self.fields:
+                raise exceptions.InvalidHeaderException(
+                    f"Got unexpected field '{header}'"
+                )
+
+    def _check_required_fields(self, headers: IterableStr):
+        data_key_mapping_alt = {
+            name: data_key for data_key, name in self.data_key_mapping.items()
+        }
+        for field_name in self._required_fields():
+            if field_name not in headers:
+                raise exceptions.InvalidHeaderException(
+                    f"Required field "
+                    f"'{data_key_mapping_alt[field_name]}' not given"
+                )
+
+    @property
+    def headers(self) -> typing.List:
+        headers = [name for name, field in self.fields.items()]
+        return headers
+
+    def get_field_name(self, name: str) -> str:
+        return self.data_key_mapping[name]
+
     def export_template(self, path: str, only: IterableStrOrNone = None):
         self._write_headers(self.sheet, only)
         self.workbook.save(path)
 
     def load(self, path: str) -> None:
         df = pd.read_excel(path)
-        self._validate_headers(df.columns)
         self.df = df.rename(columns=self.data_key_mapping)
+        self._validate_headers(self.df.columns)
 
     def rows(self):
         return RowIterator(self.df, self.fields)
-
-    def _validate_headers(self, headers: IterableStr):
-        for header in headers:
-            if header not in self.data_key_mapping:
-                raise exceptions.InvalidHeaderException(
-                    f"Got unexpected field '{header}'"
-                )
