@@ -1,3 +1,5 @@
+import typing
+
 import pandas as pd
 from openpyxl import Workbook
 from openpyxl.comments import Comment
@@ -43,7 +45,7 @@ class SpreadSheet(metaclass=SpreadSheetMeta):
         return f"<{classname} fields({utils.format_dict(self.fields)})>"
 
     @property
-    def headers(self) -> List:
+    def headers(self) -> typing.List:
         headers = [name for name, field in self.fields.items()]
         return headers
 
