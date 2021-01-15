@@ -7,7 +7,12 @@ from openpyxl.comments import Comment
 from pycargo import exceptions
 from pycargo import utils
 from pycargo.types import IterableStrOrNone, IterableStr
-from pycargo.styles import apply_style, header_style, required_header_style
+from pycargo.styles import (
+    Style,
+    apply_style,
+    header_style,
+    required_header_style,
+)
 from pycargo.fields import Field
 from pycargo.classes import RowIterator
 from pycargo import validate
@@ -37,32 +42,34 @@ class SpreadSheetMeta(type):
 
 class SpreadSheet(metaclass=SpreadSheetMeta):
     def __init__(self):
-        self.workbook = Workbook()
-        self.sheet = self.workbook.active
+        pass
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         classname = self.__class__.__name__
         return f"<{classname} fields({utils.format_dict(self.fields)})>"
 
-    def _write_headers(self, sheet, only: IterableStrOrNone = None):
+    def _get_fields_for_export(
+        self, field_names: IterableStr = None
+    ) -> typing.Dict:
         all_fields = self.fields
-        if only is None:
-            fields = self.fields
-        else:
-            fields = {
-                field_name: all_fields[field_name] for field_name in only
-            }
+        if field_names is None:
+            return self.fields
+        return {
+            field_name: all_fields[field_name] for field_name in field_names
+        }
 
+    def _get_header_style(self, field_name: str) -> typing.Type[Style]:
+        if self._is_field_required(field_name):
+            return required_header_style
+        return header_style
+
+    def _write_headers(self, sheet, only: IterableStrOrNone = None) -> None:
+        fields = self._get_fields_for_export(only)
         for idx, header in enumerate(fields, start=1):
             value = fields[header].data_key or header
             cell = sheet.cell(column=idx, row=1, value=value)
-            style = header_style
+            apply_style(cell, self._get_header_style(header))
             comment_text = fields[header].comment
-
-            if self._is_field_required(header):
-                style = required_header_style
-            apply_style(cell, style)
-
             if comment_text:
                 cell.comment = Comment(comment_text, author="")
 
@@ -80,18 +87,18 @@ class SpreadSheet(metaclass=SpreadSheetMeta):
             if self._is_field_required(field_name)
         ]
 
-    def _validate_headers(self, headers: IterableStr):
+    def _validate_headers(self, headers: IterableStr) -> None:
         self._check_unexpected_fields(headers)
         self._check_required_fields(headers)
 
-    def _check_unexpected_fields(self, headers: IterableStr):
+    def _check_unexpected_fields(self, headers: IterableStr) -> None:
         for header in headers:
             if header not in self.fields:
                 raise exceptions.InvalidHeaderException(
                     f"Got unexpected field '{header}'"
                 )
 
-    def _check_required_fields(self, headers: IterableStr):
+    def _check_required_fields(self, headers: IterableStr) -> None:
         data_key_mapping_alt = {
             name: data_key for data_key, name in self.data_key_mapping.items()
         }
@@ -110,14 +117,18 @@ class SpreadSheet(metaclass=SpreadSheetMeta):
     def get_field_name(self, name: str) -> str:
         return self.data_key_mapping[name]
 
-    def export_template(self, path: str, only: IterableStrOrNone = None):
-        self._write_headers(self.sheet, only)
-        self.workbook.save(path)
+    def export_template(
+        self, path: str, only: IterableStrOrNone = None
+    ) -> None:
+        workbook = Workbook()
+        sheet = workbook.active
+        self._write_headers(sheet, only)
+        workbook.save(path)
 
     def load(self, path: str) -> None:
         df = pd.read_excel(path)
         self.df = df.rename(columns=self.data_key_mapping)
         self._validate_headers(self.df.columns)
 
-    def rows(self):
+    def rows(self) -> typing.Type[RowIterator]:
         return RowIterator(self.df, self.fields)
