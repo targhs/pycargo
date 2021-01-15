@@ -71,12 +71,12 @@ class Range(Validator):
             f"max_inclusive={self.max_inclusive!r}"
         )
 
-    def _format_error(self, value, message: str) -> str:
+    def _format_error(self, value: typing.Any, message: str) -> str:
         return (self.error or message).format(
             input=value, min=self.min, max=self.max
         )
 
-    def __call__(self, value) -> typing.Any:
+    def __call__(self, value: typing.Any):
         if self.min is not None and (
             value < self.min if self.min_inclusive else value <= self.min
         ):
