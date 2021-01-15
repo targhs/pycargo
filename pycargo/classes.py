@@ -66,8 +66,8 @@ class Row:
 
 def get_row_obj(row_data: dict, fields: FieldsDict) -> Type[Row]:
     cells = {}
-    for key, value in row_data.items():
-        cells[key] = Cell(value, fields[key])
+    for key in fields:
+        cells[key] = Cell(row_data.get(key), fields[key])
     return Row(cells)
 
 
