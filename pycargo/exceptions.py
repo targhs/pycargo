@@ -1,4 +1,6 @@
 class PyCargoException(Exception):
+    """Base exception for PyCargo"""
+
     pass
 
 

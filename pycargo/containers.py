@@ -72,7 +72,7 @@ def get_row_obj(row_data: dict, fields: FieldsDict) -> Type[Row]:
 
 
 class RowIterator:
-    def __init__(self, df, fields):
+    def __init__(self, df: Type[pd.DataFrame], fields: dict):
         self.df = df
         self.fields = fields
         self.total_rows = len(df)
@@ -84,7 +84,7 @@ class RowIterator:
         self.row = 0
         return self
 
-    def __next__(self):
+    def __next__(self) -> Type[Row]:
         if self.row < self.total_rows:
             result = dict(self.df.iloc[self.row])
             self.row += 1
