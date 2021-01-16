@@ -16,7 +16,9 @@ OptionalString = Optional[str]
 class Field:
     """
     Base class for fields. Includes all the required
-    attributes and methods for validation
+    attributes and methods for validation.
+    data_key is the external representation of the Field which
+    is used at the time of export and import.
     """
 
     _creation_index = 0  # For sorting
@@ -42,9 +44,10 @@ class Field:
             f"comment={comment})>"
         )
 
-    def _register_validators(self, validate):
-        self.validators.append(self.validate_type)
-
+    def _register_validators(self, validate: Union[List[Callable], Callable]):
+        """Method to set self.validators for the
+        field.
+        """
         if validate:
             if callable(validate):
                 self.validators.append(validate)
@@ -52,9 +55,17 @@ class Field:
                 self.validators.extend(validate)
 
     def validate_type(self):
+        """Method to be overriden by other fields
+        that checks the type of the field and
+        should raise ValidationException if the
+        type check fails.
+        """
         raise NotImplementedError
 
-    def validate(self, value):
+    def validate(self, value: Any) -> List:
+        """Method to check value against
+        the validators and return list of errors
+        """
         errors = []
         for validator in self.validators:
             error = validator(value)
