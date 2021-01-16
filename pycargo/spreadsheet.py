@@ -14,7 +14,7 @@ from pycargo.styles import (
     required_header_style,
 )
 from pycargo.fields import Field
-from pycargo.classes import RowIterator
+from pycargo.containers import RowIterator
 from pycargo import validate
 
 
