@@ -133,8 +133,11 @@ class OneOf(Validator):
         return self.error.format(choices=self.choices, value=value)
 
     def __call__(self, value):
-        if value not in self.choices:
-            raise ValidationException(self._format_error(value))
+        try:
+            if value not in self.choices:
+                raise ValidationException(self._format_error(value))
+        except TypeError as err:
+            raise ValidationException(self._format_error(value)) from err
 
 
 class NoneOf(Validator):
@@ -153,5 +156,8 @@ class NoneOf(Validator):
         return self.error.format(iterable=self.iterable, value=value)
 
     def __call__(self, value):
-        if value in self.iterable:
-            raise ValidationException(self._format_error(value))
+        try:
+            if value in self.iterable:
+                raise ValidationException(self._format_error(value))
+        except TypeError as err:
+            raise ValidationException(self._format_error(value)) from err
