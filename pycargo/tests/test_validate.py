@@ -158,6 +158,30 @@ class TestRange:
             excinfo.value
         )
 
+    def test_min_exclusive_max_inclusive(self):
+        validator = validate.Range(min=10, max=20, min_inclusive=False)
+        validator(11)
+        validator(20)
+
+        with pytest.raises(ValidationException) as excinfo:
+            validator(10)
+        assert "Must be greater than 10 and less than or equal to 20." in str(
+            excinfo.value
+        )
+
+        with pytest.raises(ValidationException) as excinfo:
+            validator(5)
+        assert "Must be greater than 10 and less than or equal to 20." in str(
+            excinfo.value
+        )
+
+        with pytest.raises(ValidationException) as excinfo:
+            validator(21)
+
+        assert "Must be greater than 10 and less than or equal to 20." in str(
+            excinfo.value
+        )
+
     def test_min_exclusive_max_exclusive(self):
         validator = validate.Range(
             min=10, max=20, min_inclusive=False, max_inclusive=False
