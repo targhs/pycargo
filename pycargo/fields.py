@@ -48,6 +48,7 @@ class Field:
         """Method to set self.validators for the
         field.
         """
+        self.validators.append(self.validate_type)
         if validate:
             if callable(validate):
                 self.validators.append(validate)
