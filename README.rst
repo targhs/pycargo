@@ -12,7 +12,7 @@ Pycargo: Excel loading and exporting helper
 
 
 **pycargo** is a simple to use helper library for exporting and loading data from excel.
-Its a common requirement in web applications for bulk loading of data. Pycargo hides
+Its a common requirement in web applications for bulk loading of data. Pycargo abstracts
 all the working and gives you easy to use methods for easy exporting of templates and
 loading data.
 
