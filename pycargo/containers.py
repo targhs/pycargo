@@ -47,6 +47,9 @@ class Row:
     def __repr__(self):
         return f"<Row cells({self.cells})>"
 
+    def __getitem__(self, key):
+        return self.cells[key]
+
     @property
     def errors(self) -> dict:
         return {
