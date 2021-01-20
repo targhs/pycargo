@@ -1,4 +1,6 @@
 import typing
+from io import BytesIO
+from tempfile import NamedTemporaryFile
 
 import pandas as pd
 from openpyxl import Workbook
@@ -154,6 +156,15 @@ class SpreadSheet(metaclass=SpreadSheetMeta):
         """
         return self.data_key_mapping[name]
 
+    def generate_template(
+        self,
+        fields_to_write: IterableStrOrNone = None,
+    ) -> typing.Type[Worksheet]:
+        workbook = Workbook()
+        sheet = workbook.active
+        self.write_headers(sheet, fields_to_write)
+        return workbook
+
     def export_template(
         self, path: str, only: IterableStrOrNone = None
     ) -> None:
@@ -161,10 +172,17 @@ class SpreadSheet(metaclass=SpreadSheetMeta):
         the given path. field names given in only are exported
         to the file.
         """
-        workbook = Workbook()
-        sheet = workbook.active
-        self.write_headers(sheet, only)
+        workbook = self.generate_template(only)
         workbook.save(path)
+
+    def template(self, only: IterableStrOrNone = None) -> typing.Type[BytesIO]:
+        """
+        Use this in your web apps to send file object to the client.
+        """
+        workbook = self.generate_template(only)
+        with NamedTemporaryFile() as tmp:
+            workbook.save(tmp.name)
+            return BytesIO(tmp.read())
 
     def load(self, path: str) -> None:
         """Load data from the excel file to dataframe.
