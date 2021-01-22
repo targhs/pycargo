@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Optional
 
 import pytest
 
@@ -10,6 +10,7 @@ from pycargo.exceptions import ValidationException
 @dataclass
 class MockField:
     validators: list = field(default_factory=list)
+    type: Optional[Any] = None
 
 
 @dataclass
@@ -36,9 +37,9 @@ def mock_field():
 @pytest.fixture
 def row_cells():
     return {
-        "name": MockCell(["some error"]),
-        "code": MockCell(["Invalid code", "Old code"]),
-        "added_on": MockCell([]),
+        "name": MockCell(errors=["some error"]),
+        "code": MockCell(errors=["Invalid code", "Old code"]),
+        "added_on": MockCell(errors=[]),
     }
 
 
@@ -101,3 +102,33 @@ class TestRow:
             "errors": {},
         }
         assert actual == expected
+
+
+class TestGetRowObj:
+    def test_with_same_keys(self):
+        data = {"code": 1, "name": "Foo"}
+        field_mapping = {
+            "code": MockField(type=int),
+            "name": MockField(type=str),
+        }
+        actual = containers.get_row_obj(data, field_mapping)
+        assert actual.as_dict().keys() == {"code", "name", "errors"}
+
+    def test_with_extra_data_key(self):
+        data = {"code": 1, "name": "Foo", "extra_key": "extra value"}
+        field_mapping = {
+            "code": MockField(type=int),
+            "name": MockField(type=str),
+        }
+        actual = containers.get_row_obj(data, field_mapping)
+        assert actual.as_dict().keys() == {"code", "name", "errors"}
+
+    def test_with_fewer_keys(self):
+        data = {"code": 1, "name": "Foo"}
+        field_mapping = {
+            "code": MockField(type=int),
+            "name": MockField(type=str),
+            "status": MockField(type=str),
+        }
+        actual = containers.get_row_obj(data, field_mapping)
+        assert actual.as_dict().keys() == {"code", "name", "status", "errors"}
