@@ -19,5 +19,5 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.6',
-    install_requires=['validators>=0.18.2,<2', 'openpyxl>=3.0.5,<4']
+    install_requires=['validators>=0.18.2,<2', 'openpyxl>=3.0.5,<4', 'pandas>=1.2.0,<2']
 )
