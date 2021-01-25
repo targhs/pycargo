@@ -9,7 +9,7 @@ setuptools.setup(
     author="Taranjeet Singh",
     author_email="taranjeet.singh.3312@gmail.com",
     description="Pycargo is a utility to work with loading and exporting data from excel",
-    long_description="Pycargo is a utility to work with loading and exporting data from excel",
+    long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://gitlab.com/taranjeet.singh.3312/pycargo",
     packages=setuptools.find_packages(),
