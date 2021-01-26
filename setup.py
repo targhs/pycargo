@@ -5,7 +5,7 @@ with open("README.rst", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="pycargo", # Replace with your own username
-    version="2.0.0-alpha.3",
+    version="2.1.0",
     author="Taranjeet Singh",
     author_email="taranjeet.singh.3312@gmail.com",
     description="Pycargo is a utility to work with loading and exporting data from excel",
