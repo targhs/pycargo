@@ -1,0 +1,16 @@
+name: Linter
+
+on: push
+
+jobs:
+  linting:
+    name: Check linting
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checks out a copy of your repository on the ubuntu-latest machine
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Black Code Formatter
+        uses: lgeiger/black-action@v1.0.1
