@@ -14,3 +14,5 @@ jobs:
 
       - name: Black Code Formatter
         uses: lgeiger/black-action@v1.0.1
+        with:
+          args: "pycargo --check"
