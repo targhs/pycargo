@@ -55,7 +55,7 @@ class Field:
             elif isinstance(validate, list):
                 self.validators.extend(validate)
 
-    def validate_type(self):
+    def validate_type(self, *args, **kwargs):
         """Method to be overriden by other fields
         that checks the type of the field and
         should raise ValidationException if the
@@ -69,15 +69,16 @@ class Field:
         """
         errors = []
         for validator in self.validators:
-            error = validator(value)
-            if error:
-                errors.append(error)
+            try:
+                validator(value)
+            except ValidationException as ex:
+                errors.append(ex.message)
         return errors
 
 
 class IntegerField(Field):
     def validate_type(self, value: Any) -> OptionalString:
-        if not isinstance(value, np.int64):
+        if not isinstance(value, (np.int64, int)):
             raise ValidationException("Value must be integer")
 
 
