@@ -18,6 +18,7 @@ from pycargo.styles import (
 )
 from pycargo.fields import Field
 from pycargo.containers import RowIterator
+from pycargo.exceptions import InvalidFieldException
 from pycargo import validate
 
 
@@ -63,9 +64,14 @@ class SpreadSheet(metaclass=SpreadSheetMeta):
         all_fields = self.fields
         if field_names is None:
             return self.fields
-        return {
-            field_name: all_fields[field_name] for field_name in field_names
-        }
+        try:
+            return {
+                field_name: all_fields[field_name]
+                for field_name in field_names
+            }
+        except KeyError as exc:
+            args = exc.args
+            raise InvalidFieldException(*args)
 
     def get_header_style(self, field_name: str) -> typing.Type[Style]:
         """Header styles differ depending upon the field is
