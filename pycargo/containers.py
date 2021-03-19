@@ -62,7 +62,8 @@ class Row:
         data = {"errors": {}}
         for field_name, field_value in self.cells.items():
             data[field_name] = field_value.value
-            if errors := field_value.errors:
+            errors = field_value.errors
+            if errors:
                 data["errors"][field_name] = errors
         return data
 
