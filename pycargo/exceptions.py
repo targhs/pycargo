@@ -12,5 +12,6 @@ class ValidationException(PyCargoException):
     def __init__(self, message: str):
         self.message = message
 
+
 class InvalidFieldException(PyCargoException):
     pass
