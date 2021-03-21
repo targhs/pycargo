@@ -4,6 +4,7 @@ import pycargo
 from pycargo.spreadsheet import SpreadSheet
 from pycargo.exceptions import InvalidFieldException
 from pycargo import fields
+from pycargo import validate
 
 
 @pytest.fixture
@@ -15,37 +16,90 @@ def simple_field_spreadsheet():
     return Foo
 
 
-def test_has_fields(simple_field_spreadsheet):
-    assert len(simple_field_spreadsheet.fields)
+@pytest.fixture
+def required_field():
+    return fields.StringField(validate=[validate.Required])
 
 
-def test_field_datatypes(simple_field_spreadsheet):
-    class_fields = simple_field_spreadsheet.fields
-    assert type(class_fields["name"]) == fields.StringField
-    assert type(class_fields["code"]) == fields.IntegerField
+@pytest.fixture
+def non_required_field():
+    return fields.StringField()
 
 
-def test_data_key_mapping(simple_field_spreadsheet):
-    mapping = simple_field_spreadsheet.data_key_mapping
-    assert mapping["Sample Code"] == "code"
-    assert mapping["name"] == "name"
+class TestSpreadSheetMeta:
+    def test_has_fields(self, simple_field_spreadsheet):
+        assert len(simple_field_spreadsheet().fields)
+
+    def test_field_datatypes(self, simple_field_spreadsheet):
+        class_fields = simple_field_spreadsheet().fields
+        assert type(class_fields["name"]) == fields.StringField
+        assert type(class_fields["code"]) == fields.IntegerField
+
+    def test_data_key_mapping(self, simple_field_spreadsheet):
+        mapping = simple_field_spreadsheet().data_key_mapping
+        assert mapping["Sample Code"] == "code"
+        assert mapping["name"] == "name"
 
 
-def test_all_fields_for_export(simple_field_spreadsheet):
-    actual = simple_field_spreadsheet().get_fields_for_export().keys()
-    expected = {"name", "code"}
-    assert actual == expected
+class TestFieldsForExport:
+    def test_all_fields_for_export(self, simple_field_spreadsheet):
+        actual = simple_field_spreadsheet().get_fields_for_export().keys()
+        expected = {"name", "code"}
+        assert actual == expected
+
+    def test_some_fields_for_export(self, simple_field_spreadsheet):
+        actual = (
+            simple_field_spreadsheet().get_fields_for_export(["name"]).keys()
+        )
+        expected = {"name"}
+        assert actual == expected
+
+    def test_invalid_field_for_export(self, simple_field_spreadsheet):
+        with pytest.raises(InvalidFieldException) as excinfo:
+            simple_field_spreadsheet().get_fields_for_export(
+                ["name", "wrong field"]
+            ).keys()
+        assert "wrong field" in str(excinfo.value)
 
 
-def test_some_fields_for_export(simple_field_spreadsheet):
-    actual = simple_field_spreadsheet().get_fields_for_export(["name"]).keys()
-    expected = {"name"}
-    assert actual == expected
+@pytest.fixture()
+def required_field_spreadsheet():
+    class Foo(SpreadSheet):
+        name = fields.StringField(validate=[validate.Required()])
+        code = fields.IntegerField(data_key="Sample Code")
+        key = fields.IntegerField(validate=[validate.Range(min=30)])
+
+    return Foo
 
 
-def test_invalid_field_for_export(simple_field_spreadsheet):
-    with pytest.raises(InvalidFieldException) as excinfo:
-        simple_field_spreadsheet().get_fields_for_export(
-            ["name", "wrong field"]
-        ).keys()
-    assert "wrong field" in str(excinfo.value)
+class TestIsFieldRequired:
+    def test_required_field(self, required_field_spreadsheet):
+        actual = required_field_spreadsheet().is_field_required("name")
+        expected = True
+        assert actual == expected
+
+    def test_non_required_field_without_validations(
+        self, required_field_spreadsheet
+    ):
+        actual = required_field_spreadsheet().is_field_required("code")
+        expected = False
+        assert actual == expected
+
+    def test_non_required_field_with_validations(
+        self, required_field_spreadsheet
+    ):
+        actual = required_field_spreadsheet().is_field_required("key")
+        expected = False
+        assert actual == expected
+
+
+class TestRequiredField:
+    def test_valid_field_names(self, required_field_spreadsheet):
+        actual = required_field_spreadsheet().required_fields()
+        expected = ["name"]
+        assert actual == expected
+
+    def test_with_no_required_fields(self, simple_field_spreadsheet):
+        actual = simple_field_spreadsheet().required_fields()
+        expected = []
+        assert actual == expected

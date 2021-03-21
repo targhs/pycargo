@@ -17,7 +17,7 @@ class Validator:
 class Required(Validator):
     default_message = "Required field"
 
-    def __init__(self, error: str = None):
+    def __init__(self, error: typing.Optional[str] = None):
         self.error = error or self.default_message
 
     def _format_error(self, value) -> str:
@@ -40,8 +40,8 @@ class Range(Validator):
 
     def __init__(
         self,
-        min: int = None,
-        max: int = None,
+        min: typing.Optional[int] = None,
+        max: typing.Optional[int] = None,
         min_inclusive: bool = True,
         max_inclusive: bool = True,
         error: typing.Optional[str] = None,
