@@ -136,6 +136,7 @@ class TestCheckRequiredField:
             required_field_spreadsheet().check_required_fields([])
         assert "Required field" in str(excinfo.value)
 
+
 @pytest.fixture
 def data_key_spreadsheet():
     class Foo(SpreadSheet):
@@ -145,22 +146,23 @@ def data_key_spreadsheet():
 
     return Foo
 
+
 class TestDataKeys:
     def test_field_without_data_key(self, data_key_spreadsheet):
         actual = data_key_spreadsheet().get_field_name("name")
         expected = "name"
         assert actual == expected
-    
+
     def test_field_with_data_key(self, data_key_spreadsheet):
         actual = data_key_spreadsheet().get_field_name("Sample Code")
         expected = "code"
         assert actual == expected
-    
+
     def test_field_with_same_data_key(self, data_key_spreadsheet):
         actual = data_key_spreadsheet().get_field_name("place")
         expected = "place"
         assert actual == expected
-    
+
     def test_invalid_field(self, data_key_spreadsheet):
         with pytest.raises(KeyError) as excinfo:
             data_key_spreadsheet().get_field_name("Invalid_key")
