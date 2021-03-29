@@ -124,7 +124,7 @@ class SpreadSheet(metaclass=SpreadSheetMeta):
 
     def check_unexpected_fields(self, headers: IterableStr) -> None:
         """Method to check if any unexpected header is given in
-        the excel. Raises InvalidHeaderException it finds any.
+        the excel. Raises InvalidHeaderException if finds any.
         """
         for header in headers:
             if header not in self.fields:
