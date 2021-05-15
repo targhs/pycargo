@@ -1,6 +1,5 @@
 from openpyxl.workbook import workbook
 import pytest
-import pycargo
 
 from openpyxl import Workbook
 
@@ -162,6 +161,11 @@ class TestDataKeys:
         with pytest.raises(KeyError) as excinfo:
             data_key_spreadsheet().get_field_name("Invalid_key")
         assert "Invalid_key" in str(excinfo.value)
+
+
+@pytest.fixture
+def empty_workbook():
+    return Workbook()
 
 
 class TestWriteheaders:
