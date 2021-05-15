@@ -1,5 +1,8 @@
+from openpyxl.workbook import workbook
 import pytest
 import pycargo
+
+from openpyxl import Workbook
 
 from pycargo.spreadsheet import SpreadSheet
 from pycargo.exceptions import InvalidFieldException, InvalidHeaderException
@@ -48,9 +51,7 @@ class TestFieldsForExport:
         assert actual == expected
 
     def test_some_fields_for_export(self, simple_field_spreadsheet):
-        actual = (
-            simple_field_spreadsheet().get_fields_for_export(["name"]).keys()
-        )
+        actual = simple_field_spreadsheet().get_fields_for_export(["name"]).keys()
         expected = {"name"}
         assert actual == expected
 
@@ -78,16 +79,12 @@ class TestIsFieldRequired:
         expected = True
         assert actual == expected
 
-    def test_non_required_field_without_validations(
-        self, required_field_spreadsheet
-    ):
+    def test_non_required_field_without_validations(self, required_field_spreadsheet):
         actual = required_field_spreadsheet().is_field_required("code")
         expected = False
         assert actual == expected
 
-    def test_non_required_field_with_validations(
-        self, required_field_spreadsheet
-    ):
+    def test_non_required_field_with_validations(self, required_field_spreadsheet):
         actual = required_field_spreadsheet().is_field_required("key")
         expected = False
         assert actual == expected
@@ -127,9 +124,7 @@ class TestCheckRequiredField:
         assert "Required field" in str(excinfo.value)
 
     def test_with_required_field(self, required_field_spreadsheet):
-        required_field_spreadsheet().check_required_fields(
-            ["code", "key", "name"]
-        )
+        required_field_spreadsheet().check_required_fields(["code", "key", "name"])
 
     def test_with_no_header(self, required_field_spreadsheet):
         with pytest.raises(InvalidHeaderException) as excinfo:
@@ -167,3 +162,19 @@ class TestDataKeys:
         with pytest.raises(KeyError) as excinfo:
             data_key_spreadsheet().get_field_name("Invalid_key")
         assert "Invalid_key" in str(excinfo.value)
+
+
+class TestWriteheaders:
+    def test_headers(self, empty_workbook, simple_field_spreadsheet):
+        workbook = empty_workbook
+        sheet = workbook.active
+        ss = simple_field_spreadsheet()
+        ss.write_headers(sheet, ["name", "code"])
+        assert sheet["A1"], sheet["B1"] == ("name", "Sample Code")
+
+    def test_comments(self, empty_workbook, simple_field_spreadsheet):
+        workbook = empty_workbook
+        sheet = workbook.active
+        ss = simple_field_spreadsheet()
+        ss.write_headers(sheet, ["name", "code"])
+        assert sheet["A1"], sheet["B1"] == ("name", "Sample Code")
